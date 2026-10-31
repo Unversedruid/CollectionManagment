@@ -1,0 +1,136 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:CollectionDowngrader"
+        x:Class="CollectionDowngrader.MainWindow"
+        Title="Collection Downgrader — Collection Browser"
+        Width="980" Height="680" MinWidth="720" MinHeight="460">
+  <Grid RowDefinitions="Auto,*" Margin="20">
+    <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Button x:Name="OpenButton" Content="Open client.realm…" Classes="accent" />
+        <TextBlock x:Name="PathLabel" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+      <TextBlock x:Name="StatusLabel" Foreground="IndianRed" TextWrapping="Wrap" />
+    </StackPanel>
+
+    <TabControl Grid.Row="1">
+      <TabItem Header="Collections">
+        <Grid ColumnDefinitions="*,2*" ColumnSpacing="16">
+          <Border Grid.Column="0" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <DockPanel LastChildFill="True">
+              <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+                <TextBlock FontSize="18" FontWeight="SemiBold" Text="Collections" />
+                <TextBox x:Name="CollectionSearch" Watermark="Filter collections…" />
+              </StackPanel>
+              <ListBox x:Name="CollectionList">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Border Background="Transparent" Padding="6,4">
+                      <Border.ContextMenu>
+                        <ContextMenu Opening="CollectionContextMenu_Opening">
+                          <MenuItem Header="Export collection package…" Click="ExportCollection_Click" />
+                          <Separator />
+                          <MenuItem Header="Delete collection…" Click="DeleteCollection_Click" />
+                        </ContextMenu>
+                      </Border.ContextMenu>
+                      <TextBlock Text="{Binding DisplayText}" />
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+          </Border>
+
+          <Border Grid.Column="1" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <DockPanel LastChildFill="True">
+              <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,10">
+                <TextBlock x:Name="SelectedCollectionLabel" FontSize="18" FontWeight="SemiBold" Text="Select a collection" />
+                <TextBox x:Name="HashSearch" Watermark="Filter beatmap names or hashes…" IsEnabled="False" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button x:Name="AddSongsButton" Content="Add songs…" Classes="accent" IsEnabled="False" />
+                  <Button x:Name="RemoveSongButton" Content="Remove selected song" IsEnabled="False" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                  <TextBlock Text="Star rating" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <TextBlock x:Name="StarRatingRangeLabel" Classes="muted" Text="All ratings" VerticalAlignment="Center" MinWidth="100" />
+                  <local:StarRangeSlider x:Name="StarRatingRange" Minimum="0" Maximum="20" Width="280" IsEnabled="False" />
+                  <Button x:Name="ClearStarRatingButton" Content="Clear range" IsEnabled="False" />
+                </StackPanel>
+                <Grid ColumnDefinitions="1.1*,2.5*,1.5*,0.8*" Margin="8,4,8,2">
+                  <Button x:Name="ArtistSortButton" Grid.Column="0" Content="Artist" Classes="sortheader" HorizontalContentAlignment="Left" />
+                  <Button x:Name="SongSortButton" Grid.Column="1" Content="Song name" Classes="sortheader" HorizontalContentAlignment="Left" />
+                  <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="Difficulty" VerticalAlignment="Center" />
+                  <Button x:Name="RatingSortButton" Grid.Column="3" Content="Star rating" Classes="sortheader" HorizontalContentAlignment="Right" />
+                </Grid>
+              </StackPanel>
+              <ListBox x:Name="HashList">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="local:BeatmapData">
+                    <Grid ColumnDefinitions="1.1*,2.5*,1.5*,0.8*" Margin="8,5" Background="Transparent">
+                      <Grid.ContextMenu>
+                        <ContextMenu Opening="BeatmapContextMenu_Opening">
+                          <MenuItem Header="Add to Collection">
+                            <MenuItem Header="No collections available" IsEnabled="False" />
+                          </MenuItem>
+                          <MenuItem Header="Remove from Collection" Click="RemoveBeatmapFromCollection_Click" />
+                        </ContextMenu>
+                      </Grid.ContextMenu>
+                      <TextBlock Grid.Column="0" Text="{Binding ArtistText}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{Binding SongNameText}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="2" Text="{Binding DifficultyNameText}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="3" Text="{Binding StarRatingText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Imports">
+        <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+          <DockPanel LastChildFill="True">
+            <StackPanel DockPanel.Dock="Top" Spacing="12" Margin="0,0,0,12">
+              <TextBlock FontSize="18" FontWeight="SemiBold" Text="Find and import beatmaps from a collection" />
+              <Button x:Name="ImportButton" Content="Import collection…" Classes="accent" IsEnabled="False" HorizontalAlignment="Left" />
+              <ComboBox x:Name="DownloadCollectionComboBox" PlaceholderText="Select a collection">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayText}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock TextWrapping="Wrap" Text="Downloads use osu!'s official website. If the site requires a signed-in session, paste either the osu_session value or the full Cookie header below. It stays in memory and is sent only to osu.ppy.sh. Never share it." />
+              <TextBox x:Name="OsuSessionCookieBox" PasswordChar="●" Watermark="Optional osu_session value or Cookie header" />
+              <TextBlock TextWrapping="Wrap" Text="Files are saved to Downloads/CollectionManager and opened with your system's registered .osz handler (set this to osu!lazer). Collection Manager packages carry beatmapset IDs and song metadata; plain collection.db files contain hashes only." />
+              <TextBlock x:Name="DownloadSummaryLabel" Classes="muted" Text="No collection selected." TextWrapping="Wrap" />
+              <Button x:Name="DownloadAllButton" Content="Download all" Classes="accent" IsEnabled="False" HorizontalAlignment="Left" />
+              <TextBlock x:Name="DownloadsStatusLabel" Classes="muted" TextWrapping="Wrap" />
+            </StackPanel>
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+              <ItemsControl x:Name="DownloadSetList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="downloadrow" MinHeight="72" Margin="2,3" Padding="12,8" Background="{DynamicResource RaisedBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="7" ClipToBounds="True">
+                      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+                        <local:DownloadProgressBackground Grid.RowSpan="2" Grid.ColumnSpan="2" Progress="{Binding Progress}" Fill="{DynamicResource DownloadProgressBrush}" IsHitTestVisible="False" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding SongNameText}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding MapperStatusText}" Classes="muted" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <Button Grid.RowSpan="2" Grid.Column="1" Content="Download &amp; open" Classes="accent" IsEnabled="{Binding CanDownload}" Click="DownloadAndOpenBeatmapset_Click" VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</Window>

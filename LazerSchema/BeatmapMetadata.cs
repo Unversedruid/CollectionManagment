@@ -11,7 +11,9 @@ namespace CollectionDowngrader.LazerSchema
         public string ArtistUnicode { get; set; } = string.Empty;
         public RealmUser Author { get; set; } = new RealmUser();
         public string Source { get; set; } = string.Empty;
-        public string? Tags { get; set; } = string.Empty;
+        public string Tags { get; set; } = string.Empty;
+
+        public IList<string> UserTags { get; } = null!;
         public int PreviewTime { get; set; }
         public string AudioFile { get; set; } = string.Empty;
         public string BackgroundFile { get; set; } = string.Empty;

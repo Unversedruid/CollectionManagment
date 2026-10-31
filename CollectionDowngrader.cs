@@ -7,16 +7,13 @@ namespace CollectionDowngrader
 {
     class CollectionDowngrader
     {
-        const int LazerSchemaVersion = 41;
+        // osu!lazer Realm schema version current as of 2026-10.
+        internal const int LazerSchemaVersion = 52;
 
-        private static int Main(string[] args)
+        internal static int Run(string[] args)
         {
             String realmFile, outputFile;
-            FileStream outStream;
-            BinaryWriter binWriter;
             Realm db;
-            DateTimeOffset lastMod;
-            BeatmapCollection? lastModCollection;
 
             if (args.Length != 2)
             {
@@ -50,19 +47,9 @@ namespace CollectionDowngrader
                 SchemaVersion = LazerSchemaVersion
             };
 
-            config.Schema = new[] {
-                typeof(Beatmap),
-                typeof(BeatmapCollection),
-                typeof(BeatmapDifficulty),
-                typeof(BeatmapMetadata),
-                typeof(BeatmapSet),
-                typeof(BeatmapUserSettings),
-                typeof(RealmFile),
-                typeof(RealmNamedFileUsage),
-                typeof(RealmUser),
-                typeof(Ruleset),
-                typeof(ModPreset)
-            };
+            // Keep the Realm schema limited to the only model this tool reads.
+            // This avoids requiring unrelated lazer models to mirror every schema change.
+            config.Schema = new[] { typeof(BeatmapCollection) };
 
             try
             {
@@ -128,55 +115,16 @@ namespace CollectionDowngrader
 
             try
             {
-                outStream = File.Open(outputFile, FileMode.CreateNew, FileAccess.Write);
+                CollectionDbCodec.Write(outputFile, collections.Select(collection =>
+                    new LegacyCollection(collection.Name, collection.BeatmapMD5Hashes.ToArray())));
             }
             catch (IOException ioe)
             {
-                Console.Error.WriteLine($"Cannot create output file for writing: {ioe.Message}");
-
+                Console.Error.WriteLine($"Cannot write collection database: {ioe.Message}");
                 db.Dispose();
                 return 1;
             }
 
-            Console.WriteLine("Output file is created successfully, now start writing data.");
-
-            binWriter = new BinaryWriter(outStream);
-
-            // find the last modified collection and its modification date
-            lastModCollection = collections.MaxBy(i => i.LastModified.Ticks);
-            lastMod = lastModCollection is null ? DateTimeOffset.Now : lastModCollection.LastModified;
-
-            try
-            {
-
-                binWriter.Write((int)lastMod.Ticks); // last modification date
-                binWriter.Write(collectionCount); // collection count
-
-                foreach (BeatmapCollection collection in collections)
-                {
-                    binWriter.Write((byte)0x0b);
-                    binWriter.Write(collection.Name); // collection name
-                    binWriter.Write(collection.BeatmapMD5Hashes.Count); // beatmap count
-
-                    foreach (string hash in collection.BeatmapMD5Hashes)
-                    {
-                        binWriter.Write((byte)0x0b);
-                        binWriter.Write(hash); // beatmap MD5 hash
-                    }
-                }
-            }
-            catch (IOException ioe)
-            {
-                Console.Error.WriteLine($"Error writing data: {ioe.Message}");
-
-                binWriter.Close();
-                outStream.Close();
-                db.Dispose();
-                return 1;
-            }
-
-            binWriter.Close();
-            outStream.Close();
             db.Dispose();
 
             Console.WriteLine("Everything is OK.");

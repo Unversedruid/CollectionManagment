@@ -44,33 +44,15 @@ namespace CollectionDowngrader.LazerSchema
 
         public bool Hidden { get; set; }
 
-        public double AudioLeadIn { get; set; }
-
-        public float StackLeniency { get; set; } = 0.7f;
-
-        public bool SpecialStyle { get; set; }
-
-        public bool LetterboxInBreaks { get; set; }
-
-        public bool WidescreenStoryboard { get; set; }
-
-        public bool EpilepsyWarning { get; set; }
-
-        public bool SamplesMatchPlaybackRate { get; set; }
-
         public DateTimeOffset? LastPlayed { get; set; }
 
-        public double DistanceSpacing { get; set; }
+        public int EndTimeObjectCount { get; set; } = -1;
+
+        public int TotalObjectCount { get; set; } = -1;
 
         public int BeatDivisor { get; set; }
 
-        public int GridSize { get; set; }
-
-        public double TimelineZoom { get; set; }
-
         public double? EditorTimestamp { get; set; }
-
-        public int CountdownOffset { get; set; }
 
         // Author kabii
         public override bool Equals(object? obj)
